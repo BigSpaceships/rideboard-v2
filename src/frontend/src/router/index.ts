@@ -31,7 +31,7 @@ async function handleEventIdRedirects(
 
   const jsonData: Event = await response.json();
 
-  const isInPast = new Date(jsonData.startTime).getTime() < Date.now();
+  const isInPast = new Date(jsonData.endTime).getTime() < Date.now();
 
   const isGoingToPast = to.path.includes('history');
 

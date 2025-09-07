@@ -9,19 +9,19 @@ const eventStore = useEventStore();
 
 <template>
   <div class="container">
-    <Loading v-if="loading" />
+    <Loading v-if="loadingEvents" />
     <div v-else>
-      <button
+      <RouterLink
         v-if="screenStore.mobile"
         class="btn btn-primary mb-2"
         type="button"
-        @click="returnHome()"
+        :to="showPast ? '/history' : '/'"
       >
         All Events
-      </button>
+      </RouterLink>
       <div class="row">
         <!-- Left column: List of cards -->
-        <Transition @after-leave="showDetail = true" name="mobile">
+        <Transition @after-leave="showDetail = true" name="mobile" appear>
           <div v-if="!screenStore.mobile || showList" class="noOverflow col-md-4 pb-1">
             <EventCard
               v-for="(event, index) in eventStore.events"
@@ -33,7 +33,7 @@ const eventStore = useEventStore();
           </div>
         </Transition>
         <!-- Right column: Display selected card details -->
-        <Transition @after-leave="showList = true" name="mobile">
+        <Transition @after-leave="showList = true" name="mobile" appear>
           <div class="noOverflow col-md-8 pb-1" v-if="!screenStore.mobile || showDetail">
             <RouterView />
           </div>
@@ -44,15 +44,12 @@ const eventStore = useEventStore();
 </template>
 
 <script lang="ts">
-import { PopupType } from '@/models';
 import { defineComponent } from 'vue';
-import { usePopupStore } from '@/stores/popup';
 import { useScreenStore } from '@/stores/screen';
 
 export default defineComponent({
   props: {
-    showPast: Boolean,
-    id: Number
+    showPast: Boolean
   },
   data() {
     let screenStore = useScreenStore();
@@ -60,33 +57,11 @@ export default defineComponent({
       showList: true,
       showDetail: false,
       screenStore,
-      loading: true
+      loadingEvents: false,
+      firstLoad: true
     };
   },
   methods: {
-    async fetchCardData() {
-      const popupStore = usePopupStore();
-      try {
-        const response = await fetch(
-          '/api/v1/event/?' +
-            new URLSearchParams({
-              past: this.showPast.toString()
-            }).toString()
-        );
-        if (!response.ok) {
-          popupStore.addPopup(PopupType.Danger, `Failed to Get Events (${response.status})`);
-          return;
-        }
-        const data = await response.json();
-        const eventStore = useEventStore();
-        eventStore.setEvents(data);
-        eventStore.sortEvents(this.showPast);
-        this.loading = false;
-      } catch (error) {
-        console.error(error);
-        popupStore.addPopup(PopupType.Danger, 'Failed to Get Events. An unknown error occured.');
-      }
-    },
     selectEvent() {
       if (this.screenStore.width < 768) {
         this.showList = false;
@@ -96,8 +71,27 @@ export default defineComponent({
       this.showDetail = false;
     }
   },
-  created() {
-    this.fetchCardData(); // Fetch card data when the component is created
+  mounted() {
+    if (this.$route.params.id != undefined && this.screenStore.width < 768) {
+      this.showList = false;
+
+      // this feels so cursed but i don't know how to make it work otherwise
+      if (this.firstLoad) {
+        this.showDetail = true;
+      }
+    }
+
+    this.firstLoad = false;
+  },
+  async created() {
+    const eventStore = useEventStore();
+    if (!eventStore.isLoaded) {
+      this.loadingEvents = true;
+    }
+
+    if (await eventStore.loadEvents(this.showPast)) {
+      this.loadingEvents = false;
+    }
   },
   provide() {
     return {
