@@ -76,7 +76,7 @@ export default defineComponent({
       this.showList = false;
 
       // this feels so cursed but i don't know how to make it work otherwise
-      // it work being when you first visit a page the transition doesn't run 
+      // it work being when you first visit a page the transition doesn't run
       // I thought this would help but it doesn't https://vuejs.org/guide/built-ins/transition#transition-on-appear
       if (this.firstLoad) {
         this.showDetail = true;
