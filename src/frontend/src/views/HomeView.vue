@@ -76,12 +76,12 @@ export default defineComponent({
       this.showList = false;
 
       // this feels so cursed but i don't know how to make it work otherwise
-      if (this.firstLoad) {
-        this.showDetail = true;
-      }
+      // if (this.firstLoad) {
+      //   this.showDetail = true;
+      // }
     }
 
-    this.firstLoad = false;
+    // this.firstLoad = false;
   },
   async created() {
     const eventStore = useEventStore();
