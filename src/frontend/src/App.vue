@@ -7,7 +7,7 @@ import PopupGroup from './components/PopupGroup.vue';
 <template>
   <nav class="navbar fixed-top navbar-expand-lg navbar-dark bg-primary">
     <div class="container">
-      <a class="navbar-brand abs" href="/">Rideboard</a>
+      <RouterLink class="navbar-brand abs" to="/">Rideboard</RouterLink>
       <button
         class="navbar-toggler navbar-toggler-right"
         type="button"
